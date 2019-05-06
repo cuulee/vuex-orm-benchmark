@@ -1,15 +1,6 @@
 <template>
   <div id="app"><div class="contain" v-if="$store.state.loaded">
 
-    <h1>Import</h1>
-    <div style="display: flex;">
-      <div :style="{'flex-basis': `${100 / $store.state.types.length}%`}" class="code" v-for="type in $store.state.types" :key="`import-type-${type.index}`">
-        <h3>{{ type.title }}</h3>
-        <div v-if="typeof $store.state.times.import[type.index] === 'number'">{{ $store.state.times.import[type.index] }}ms</div>
-      </div>
-    </div>
-    <hr>
-
     <h1>Number of Entries</h1>
     <div style="display: flex;">
       <div :style="{'flex-basis': `${100 / $store.state.types.length}%`}" class="code" v-for="type in $store.state.types" :key="`info-type-${type.index}`">
@@ -19,23 +10,47 @@
         <div><b>Locations:</b> {{ info[type.index].locations }}</div>
       </div>
     </div>
+    <br>
     <hr>
+    <br>
 
-    <h1>List All Characters <button @click="listAllExec()">Run Once</button>&nbsp;<button @click="listAllExec(25)">Run 25 Times</button>&nbsp;<button @click="listAllExec(100)">Run 100 Times</button></h1>
+    <h1>Import Data</h1>
     <div style="display: flex;">
-      <div :style="{'flex-basis': `${100 / $store.state.types.length}%`}" class="code" v-for="type in $store.state.types" :key="`info-type-${type.index}`">
+      <div :style="{'flex-basis': `${100 / $store.state.types.length}%`}" class="code" v-for="type in $store.state.types" :key="`import-type-${type.index}`">
         <h3>{{ type.title }}</h3>
-        <div class="limit">{{ listAll[type.index].length }}</div>
-        <div v-if="typeof $store.state.times.listAll[type.index] === 'number'">{{ $store.state.times.listAll[type.index] }}ms</div>
+        <div v-if="typeof $store.state.times.import[type.index] === 'number'">{{ $store.state.times.import[type.index] }}ms</div>
       </div>
     </div>
-    <div class="code">
-      {{ $store.state.types.map(type => $store.state.times.listAll[type.index]) }}
+    <div style="display: flex;">
+      <div :style="{'flex-basis': `${100 / $store.state.types.length}%`}">
+        <chart metric="Import Data" :amount="amount.listAll" :values="$store.state.types.map(type => $store.state.times.import[type.index])"/>
+      </div>
     </div>
-    <chart v-if="loaded.listAll" metric="List All Characters" :amount="amount.listAll" :values="$store.state.types.map(type => $store.state.times.listAll[type.index])"/>
+    <br>
     <hr>
+    <br>
 
-    <h1>List With Relationships <button @click="listWithRelationshipsExec()">Run Once</button>&nbsp;<button @click="listWithRelationshipsExec(25)">Run 25 Times</button>&nbsp;<button @click="listWithRelationshipsExec(100)">Run 100 Times</button></h1>
+    <div v-for="comparison in comparisons" :key="`comparison-${comparison.index}`">
+      <h1>{{ comparison.title }}</h1>
+      <div style="display: flex;">
+        <div :style="{'flex-basis': `${100 / $store.state.types.length}%`}" class="code" v-for="type in $store.state.types" :key="`info-type-${type.index}`">
+          <h3>{{ type.title }}</h3>
+          <template v-for="t in times">
+            <div :key="`display-${t}-${comparison.index}`" v-if="typeof $store.state.times[`${t}times`][comparison.index][type.index] === 'number'"><b>{{ `${t} Time${t > 1 ? 's' : ''}` }}:</b> {{ $store.state.times[`${t}times`][comparison.index][type.index] }}ms</div>
+          </template>
+        </div>
+      </div>
+      <div style="display: flex;">
+        <div :style="{'flex-basis': `${100 / $store.state.types.length}%`}" v-for="t in times" :key="`times-${t}-${comparison.index}`">
+          <chart v-if="performRuns[comparison.index] === $store.state.types.length" :metric="comparison.title" :amount="t" :values="$store.state.types.map(type => $store.state.times[`${t}times`][comparison.index][type.index])"/>
+        </div>
+      </div>
+      <br>
+      <hr>
+      <br>
+    </div>
+<!--
+    <h1>List With Relationships <button @click="listWithRelationshipsExec()">Run Once</button>&nbsp;<button @click="listWithRelationshipsExec(25)">Run 25 Times</button></h1>
     <div style="display: flex;">
       <div :style="{'flex-basis': `${100 / $store.state.types.length}%`}" class="code" v-for="type in $store.state.types" :key="`info-type-${type.index}`">
         <h3>{{ type.title }}</h3>
@@ -46,7 +61,7 @@
     <chart v-if="loaded.listWithRelationships" metric="List With Relationships" :amount="amount.listWithRelationships" :values="$store.state.types.map(type => $store.state.times.listWithRelationships[type.index])"/>
     <hr>
 
-    <h1>List and Filter <button @click="listFilteredExec()">Run Once</button>&nbsp;<button @click="listFilteredExec(25)">Run 25 Times</button>&nbsp;<button @click="listFilteredExec(100)">Run 100 Times</button></h1>
+    <h1>List and Filter <button @click="listFilteredExec()">Run Once</button>&nbsp;<button @click="listFilteredExec(25)">Run 25 Times</button></h1>
     <div style="display: flex;">
       <div :style="{'flex-basis': `${100 / $store.state.types.length}%`}" class="code" v-for="type in $store.state.types" :key="`info-type-${type.index}`">
         <h3>{{ type.title }}</h3>
@@ -57,7 +72,7 @@
     <chart v-if="loaded.listFiltered" metric="List and Filter" :amount="amount.listFiltered" :values="$store.state.types.map(type => $store.state.times.listFiltered[type.index])"/>
     <hr>
 
-    <h1>Fetch Character and Relationships By ID <button @click="fetchRandomExec()">Run Once</button>&nbsp;<button @click="fetchRandomExec(25)">Run 25 Times</button>&nbsp;<button @click="fetchRandomExec(100)">Run 100 Times</button></h1>
+    <h1>Fetch Character and Relationships By ID <button @click="fetchRandomExec()">Run Once</button>&nbsp;<button @click="fetchRandomExec(25)">Run 25 Times</button></h1>
     <div style="display: flex;">
       <div :style="{'flex-basis': `${100 / $store.state.types.length}%`}" class="code" v-for="type in $store.state.types" :key="`info-type-${type.index}`">
         <h3>{{ type.title }}</h3>7
@@ -72,7 +87,7 @@
     <div style="display: flex;">
     </div>
     <hr>
-
+-->
   </div></div>
 </template>
 
@@ -86,6 +101,29 @@
 
   let component = {
     data: () => ({
+      times: [1, 25],
+      comparisons: [
+        {index: 'listAll', title: 'List All Characters'},
+        {index: 'listWithRelationships', title: 'List With Relationships'},
+        {index: 'listFiltered', title: 'List and Filter'},
+        {index: 'fetchRandom', title: 'Fetch Character and Relationships By ID'},
+      ],
+      performs: [
+        {name: 'listAll', times: 1},
+        {name: 'listAll', times: 25},
+        {name: 'listWithRelationships', times: 1},
+        {name: 'listWithRelationships', times: 25},
+        {name: 'listFiltered', times: 1},
+        {name: 'listFiltered', times: 25},
+        {name: 'fetchRandom', times: 1},
+        {name: 'fetchRandom', times: 25},
+      ],
+      performRuns: {
+        listAll: 0,
+        listWithRelationships: 0,
+        listFiltered: 0,
+        fetchRandom: 0,
+      },
       loaded: {
         listAll: false,
         listWithRelationships: false,
@@ -136,78 +174,82 @@
       },
     },
     methods: {
-      listAllExec(amount = 1){
+      listAllExec(times = 1){
         this.loaded.listAll = false
         this.$nextTick(() => {
-          this.amount.listAll = amount
           const startOrm = new Date().getTime()
-          for(let i = 0; i < amount; i++)
+          console.log('this.listAll', this.listAll)
+          for(let i = 0; i < times; i++)
             this.listAll.orm = this.$store.getters['entities/characters/all']()
-          this.$store.commit('time', {name: 'listAll', type: 'orm', ms: new Date().getTime() - startOrm})
+          this.$store.commit('time', {name: 'listAll', type: 'orm', ms: new Date().getTime() - startOrm, times})
           const startModules = new Date().getTime()
-          for(let i = 0; i < amount; i++)
+          for(let i = 0; i < times; i++)
             this.listAll.modules = Object.values(this.$store.state.characters.all)
-          this.$store.commit('time', {name: 'listAll', type: 'modules', ms: new Date().getTime() - startModules})
+          this.$store.commit('time', {name: 'listAll', type: 'modules', ms: new Date().getTime() - startModules, times})
           this.loaded.listAll = true
         })
       },
-      listWithRelationshipsExec(amount = 1){
+      listWithRelationshipsExec(times = 1){
         this.loaded.listWithRelationships = false
         this.$nextTick(() => {
-          this.amount.listWithRelationships = amount
           const startOrm = new Date().getTime()
-          for(let i = 0; i < amount; i++)
+          for(let i = 0; i < times; i++)
             this.listWithRelationships.orm = this.$store.getters['entities/characters/query']().with('episodes').with('locationOrigin').get()
-          this.$store.commit('time', {name: 'listWithRelationships', type: 'orm', ms: new Date().getTime() - startOrm})
+          this.$store.commit('time', {name: 'listWithRelationships', type: 'orm', ms: new Date().getTime() - startOrm, times})
           const startModules = new Date().getTime()
-          for(let i = 0; i < amount; i++)
+          for(let i = 0; i < times; i++)
             this.listWithRelationships.modules = Object.values(this.$store.state.characters.all).map((character) => {return {...character, episodes: character.episodes.map(idEpisode => this.$store.state.episodes.all[idEpisode]), locationOrigin: this.$store.state.locations.all[character.idLocationOrigin]}})
-          this.$store.commit('time', {name: 'listWithRelationships', type: 'modules', ms: new Date().getTime() - startModules})
+          this.$store.commit('time', {name: 'listWithRelationships', type: 'modules', ms: new Date().getTime() - startModules, times})
           this.loaded.listWithRelationships = true
         })
       },
-      listFilteredExec(amount = 1){
+      listFilteredExec(times = 1){
         this.loaded.listFiltered = false
         this.$nextTick(() => {
-          this.amount.listFiltered = amount
           const startOrm = new Date().getTime()
-          for(let i = 0; i < amount; i++)
+          for(let i = 0; i < times; i++)
             this.listFiltered.orm = this.$store.getters['entities/characters/query']().where('status', 'Alive').with('episodes').with('locationOrigin').get()
-          this.$store.commit('time', {name: 'listFiltered', type: 'orm', ms: new Date().getTime() - startOrm})
+          this.$store.commit('time', {name: 'listFiltered', type: 'orm', ms: new Date().getTime() - startOrm, times})
           const startModules = new Date().getTime()
-          for(let i = 0; i < amount; i++)
+          for(let i = 0; i < times; i++)
             this.listFiltered.modules = Object.values(this.$store.state.characters.all).filter(character => character.status === 'Alive').map((character) => {return {...character, episodes: character.episodes.map(idEpisode => this.$store.state.episodes.all[idEpisode]), locationOrigin: this.$store.state.locations.all[character.idLocationOrigin]}})
-          this.$store.commit('time', {name: 'listFiltered', type: 'modules', ms: new Date().getTime() - startModules})
+          this.$store.commit('time', {name: 'listFiltered', type: 'modules', ms: new Date().getTime() - startModules, times})
           this.loaded.listFiltered = true
         })
       },
-      fetchRandomExec(amount = 1){
+      fetchRandomExec(times = 1){
         this.loaded.fetchRandom = false
         this.$nextTick(() => {
-          this.amount.fetchRandom = amount
           let id
           const numCharacters = Object.values(this.$store.state.characters.all).length
           const startOrm = new Date().getTime()
-          for(let i = 0; i < amount; i++){
+          for(let i = 0; i < times; i++){
             id = Math.round(Math.random() * numCharacters) + 1
             const character = this.$store.getters['entities/characters/query']().where('idCharacter', id).with('episodes').with('locationCurrent').get()
             this.fetchRandom.orm = character
           }
-          this.$store.commit('time', {name: 'fetchRandom', type: 'orm', ms: new Date().getTime() - startOrm})
+          this.$store.commit('time', {name: 'fetchRandom', type: 'orm', ms: new Date().getTime() - startOrm, times})
           const startModules = new Date().getTime()
-          for(let i = 0; i < amount; i++){
+          for(let i = 0; i < times; i++){
             id = Math.round(Math.random() * numCharacters) + 1
             const character = this.$store.state.characters.all[id]
-            console.log('character.episodes', character.episodes)
             character.episodes = character.episodes.map((idEpisode) => {
-              console.log('idEpisode', idEpisode, this.$store.state.episodes.all[idEpisode])
               return this.$store.state.episodes.all[idEpisode]
             })
             character.locationCurrent = this.$store.state.locations.all[character.idLocationOrigin]
             this.fetchRandom.modules = character
           }
-          this.$store.commit('time', {name: 'fetchRandom', type: 'modules', ms: new Date().getTime() - startModules})
+          this.$store.commit('time', {name: 'fetchRandom', type: 'modules', ms: new Date().getTime() - startModules, times})
           this.loaded.fetchRandom = true
+        })
+      },
+      async perform(){
+        const p = this.performs.shift()
+        await this[`${p.name}Exec`](p.times)
+        this.$nextTick(() => {
+          this.performRuns[p.name]++
+          if(this.performs.length)
+            setTimeout(this.perform, 1000)
         })
       },
     },
@@ -215,8 +257,10 @@
       chart,
     },
     async created(){
-      console.log(this.$store)
     },
+    mounted(){
+      setTimeout(this.perform, 1000)
+    }
   }
 
 // Export =====================

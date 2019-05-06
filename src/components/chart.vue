@@ -1,5 +1,5 @@
 <template><div>
-    <chart :chart-data="data" :options="options" :width="200" :height="35"></chart>
+    <chart :chart-data="data" :options="options" :width="200" :height="60"></chart>
 </div></template>
 
 <script>
@@ -39,10 +39,11 @@
       },
       options(){
         return {
+          showDatapoints: true,
           legend: {display: false},
           title: {
             display: true,
-            text: `${this.metric} (${this.amount} times)`,
+            text: `${this.metric} ${this.amount ? '(' + this.amount + ' times)' : ''}`,
           },
           scales: {
             xAxes: [{
@@ -51,7 +52,16 @@
                 max: this.max,
               },
             }],
-          }
+          },
+          showTooltips: false,
+          layout: {
+            padding: {
+              left: 5,
+              right: 25,
+              top: 0,
+              bottom: 0
+            },
+          },
         }
       },
     },

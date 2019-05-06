@@ -30,29 +30,45 @@
       {index: 'modules', title: 'Vuex Modules'},
     ],
     times: {
-      init: {
-        orm: timeOrm,
-        modules: timeModules,
-      },
       import: {
         orm: null,
         modules: null,
       },
-      listAll: {
-        orm: null,
-        modules: null,
+      '1times': {
+        listAll: {
+          orm: null,
+          modules: null,
+        },
+        listWithRelationships: {
+          orm: null,
+          modules: null,
+        },
+        listFiltered: {
+          orm: null,
+          modules: null,
+        },
+        fetchRandom: {
+          orm: null,
+          modules: null,
+        },
       },
-      listWithRelationships: {
-        orm: null,
-        modules: null,
-      },
-      listFiltered: {
-        orm: null,
-        modules: null,
-      },
-      fetchRandom: {
-        orm: null,
-        modules: null,
+      '25times': {
+        listAll: {
+          orm: null,
+          modules: null,
+        },
+        listWithRelationships: {
+          orm: null,
+          modules: null,
+        },
+        listFiltered: {
+          orm: null,
+          modules: null,
+        },
+        fetchRandom: {
+          orm: null,
+          modules: null,
+        },
       },
     },
   }
@@ -63,8 +79,11 @@
     loaded(state, value){
       state.loaded = value
     },
-    time(state, {name, type, ms}){
-      state.times[name][type] = ms
+    time(state, {name, type, ms, times}){
+      if(times)
+        state.times[`${times}times`][name][type] = ms
+      else
+        state.times[name][type] = ms
     },
   }
 

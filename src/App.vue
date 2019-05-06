@@ -1,31 +1,306 @@
 <template>
-  <div id="app">
-    <div id="nav">
-      <router-link to="/">Home</router-link> |
-      <router-link to="/about">About</router-link>
+  <div id="app"><div class="contain" v-if="$store.state.loaded">
+
+    <h1>Import</h1>
+    <div style="display: flex;">
+      <div :style="{'flex-basis': `${100 / $store.state.types.length}%`}" class="code" v-for="type in $store.state.types" :key="`import-type-${type.index}`">
+        <h3>{{ type.title }}</h3>
+        <div v-if="typeof $store.state.times.import[type.index] === 'number'">{{ $store.state.times.import[type.index] }}ms</div>
+      </div>
     </div>
-    <router-view/>
-  </div>
+    <hr>
+
+    <h1>Number of Entries</h1>
+    <div style="display: flex;">
+      <div :style="{'flex-basis': `${100 / $store.state.types.length}%`}" class="code" v-for="type in $store.state.types" :key="`info-type-${type.index}`">
+        <h3>{{ type.title }}</h3>
+        <div><b>Characters:</b> {{ info[type.index].characters }}</div>
+        <div><b>Episodes:</b> {{ info[type.index].episodes }}</div>
+        <div><b>Locations:</b> {{ info[type.index].locations }}</div>
+      </div>
+    </div>
+    <hr>
+
+    <h1>List All Characters <button @click="listAllExec()">Run Once</button>&nbsp;<button @click="listAllExec(25)">Run 25 Times</button>&nbsp;<button @click="listAllExec(100)">Run 100 Times</button></h1>
+    <div style="display: flex;">
+      <div :style="{'flex-basis': `${100 / $store.state.types.length}%`}" class="code" v-for="type in $store.state.types" :key="`info-type-${type.index}`">
+        <h3>{{ type.title }}</h3>
+        <div class="limit">{{ listAll[type.index].length }}</div>
+        <div v-if="typeof $store.state.times.listAll[type.index] === 'number'">{{ $store.state.times.listAll[type.index] }}ms</div>
+      </div>
+    </div>
+    <div class="code">
+      {{ $store.state.types.map(type => $store.state.times.listAll[type.index]) }}
+    </div>
+    <chart v-if="loaded.listAll" metric="List All Characters" :amount="amount.listAll" :values="$store.state.types.map(type => $store.state.times.listAll[type.index])"/>
+    <hr>
+
+    <h1>List With Relationships <button @click="listWithRelationshipsExec()">Run Once</button>&nbsp;<button @click="listWithRelationshipsExec(25)">Run 25 Times</button>&nbsp;<button @click="listWithRelationshipsExec(100)">Run 100 Times</button></h1>
+    <div style="display: flex;">
+      <div :style="{'flex-basis': `${100 / $store.state.types.length}%`}" class="code" v-for="type in $store.state.types" :key="`info-type-${type.index}`">
+        <h3>{{ type.title }}</h3>
+        <div class="limit">{{ listWithRelationships[type.index].length }}</div>
+        <div v-if="typeof $store.state.times.listWithRelationships[type.index] === 'number'">{{ $store.state.times.listWithRelationships[type.index] }}ms</div>
+      </div>
+    </div>
+    <chart v-if="loaded.listWithRelationships" metric="List With Relationships" :amount="amount.listWithRelationships" :values="$store.state.types.map(type => $store.state.times.listWithRelationships[type.index])"/>
+    <hr>
+
+    <h1>List and Filter <button @click="listFilteredExec()">Run Once</button>&nbsp;<button @click="listFilteredExec(25)">Run 25 Times</button>&nbsp;<button @click="listFilteredExec(100)">Run 100 Times</button></h1>
+    <div style="display: flex;">
+      <div :style="{'flex-basis': `${100 / $store.state.types.length}%`}" class="code" v-for="type in $store.state.types" :key="`info-type-${type.index}`">
+        <h3>{{ type.title }}</h3>
+        <div class="limit">{{ listFiltered[type.index].length }}</div>
+        <div v-if="typeof $store.state.times.listFiltered[type.index] === 'number'">{{ $store.state.times.listFiltered[type.index] }}ms</div>
+      </div>
+    </div>
+    <chart v-if="loaded.listFiltered" metric="List and Filter" :amount="amount.listFiltered" :values="$store.state.types.map(type => $store.state.times.listFiltered[type.index])"/>
+    <hr>
+
+    <h1>Fetch Character and Relationships By ID <button @click="fetchRandomExec()">Run Once</button>&nbsp;<button @click="fetchRandomExec(25)">Run 25 Times</button>&nbsp;<button @click="fetchRandomExec(100)">Run 100 Times</button></h1>
+    <div style="display: flex;">
+      <div :style="{'flex-basis': `${100 / $store.state.types.length}%`}" class="code" v-for="type in $store.state.types" :key="`info-type-${type.index}`">
+        <h3>{{ type.title }}</h3>7
+        <div class="limit">{{ fetchRandom[type.index] && typeof fetchRandom[type.index][0] !== 'undefined' ? fetchRandom[type.index][0] : fetchRandom[type.index] }}</div>
+        <div v-if="typeof $store.state.times.fetchRandom[type.index] === 'number'">{{ $store.state.times.fetchRandom[type.index] }}ms</div>
+      </div>
+    </div>
+    <chart v-if="loaded.fetchRandom" metric="Fetch Character and Relationships By ID" :amount="amount.fetchRandom" :values="$store.state.types.map(type => $store.state.times.fetchRandom[type.index])"/>
+    <hr>
+
+    <h1>Responsiveness <button @click="fetchRandomExec()">Run Once</button>&nbsp;<button @click="fetchRandomExec(25)">Run 25 Times</button>&nbsp;<button @click="fetchRandomExec(100)">Run 100 Times</button></h1>
+    <div style="display: flex;">
+    </div>
+    <hr>
+
+  </div></div>
 </template>
 
+<script>
+
+// Dependencies ===============
+
+  import chart from '@/components/chart.vue'
+
+// App ========================
+
+  let component = {
+    data: () => ({
+      loaded: {
+        listAll: false,
+        listWithRelationships: false,
+        listFiltered: false,
+        fetchRandom: false,
+      },
+      amount: {
+        listAll: 0,
+        listWithRelationships: 0,
+        listFiltered: 0,
+        fetchRandom: 0,
+      },
+      listAll: {
+        amount: 0,
+        orm: [],
+        modules: [],
+      },
+      listWithRelationships: {
+        amount: 0,
+        orm: [],
+        modules: [],
+      },
+      listFiltered: {
+        amount: 0,
+        orm: [],
+        modules: [],
+      },
+      fetchRandom: {
+        amount: 0,
+        orm: null,
+        modules: null,
+      },
+    }),
+    computed: {
+      info(){
+        return {
+          orm: {
+            characters: this.$store.getters['entities/characters/all']().length,
+            episodes: this.$store.getters['entities/episodes/all']().length,
+            locations: this.$store.getters['entities/locations/all']().length,
+          },
+          modules: {
+            characters: Object.values(this.$store.state.characters.all).length,
+            episodes: Object.values(this.$store.state.episodes.all).length,
+            locations: Object.values(this.$store.state.locations.all).length,
+          },
+        }
+      },
+    },
+    methods: {
+      listAllExec(amount = 1){
+        this.loaded.listAll = false
+        this.$nextTick(() => {
+          this.amount.listAll = amount
+          const startOrm = new Date().getTime()
+          for(let i = 0; i < amount; i++)
+            this.listAll.orm = this.$store.getters['entities/characters/all']()
+          this.$store.commit('time', {name: 'listAll', type: 'orm', ms: new Date().getTime() - startOrm})
+          const startModules = new Date().getTime()
+          for(let i = 0; i < amount; i++)
+            this.listAll.modules = Object.values(this.$store.state.characters.all)
+          this.$store.commit('time', {name: 'listAll', type: 'modules', ms: new Date().getTime() - startModules})
+          this.loaded.listAll = true
+        })
+      },
+      listWithRelationshipsExec(amount = 1){
+        this.loaded.listWithRelationships = false
+        this.$nextTick(() => {
+          this.amount.listWithRelationships = amount
+          const startOrm = new Date().getTime()
+          for(let i = 0; i < amount; i++)
+            this.listWithRelationships.orm = this.$store.getters['entities/characters/query']().with('episodes').with('locationOrigin').get()
+          this.$store.commit('time', {name: 'listWithRelationships', type: 'orm', ms: new Date().getTime() - startOrm})
+          const startModules = new Date().getTime()
+          for(let i = 0; i < amount; i++)
+            this.listWithRelationships.modules = Object.values(this.$store.state.characters.all).map((character) => {return {...character, episodes: character.episodes.map(idEpisode => this.$store.state.episodes.all[idEpisode]), locationOrigin: this.$store.state.locations.all[character.idLocationOrigin]}})
+          this.$store.commit('time', {name: 'listWithRelationships', type: 'modules', ms: new Date().getTime() - startModules})
+          this.loaded.listWithRelationships = true
+        })
+      },
+      listFilteredExec(amount = 1){
+        this.loaded.listFiltered = false
+        this.$nextTick(() => {
+          this.amount.listFiltered = amount
+          const startOrm = new Date().getTime()
+          for(let i = 0; i < amount; i++)
+            this.listFiltered.orm = this.$store.getters['entities/characters/query']().where('status', 'Alive').with('episodes').with('locationOrigin').get()
+          this.$store.commit('time', {name: 'listFiltered', type: 'orm', ms: new Date().getTime() - startOrm})
+          const startModules = new Date().getTime()
+          for(let i = 0; i < amount; i++)
+            this.listFiltered.modules = Object.values(this.$store.state.characters.all).filter(character => character.status === 'Alive').map((character) => {return {...character, episodes: character.episodes.map(idEpisode => this.$store.state.episodes.all[idEpisode]), locationOrigin: this.$store.state.locations.all[character.idLocationOrigin]}})
+          this.$store.commit('time', {name: 'listFiltered', type: 'modules', ms: new Date().getTime() - startModules})
+          this.loaded.listFiltered = true
+        })
+      },
+      fetchRandomExec(amount = 1){
+        this.loaded.fetchRandom = false
+        this.$nextTick(() => {
+          this.amount.fetchRandom = amount
+          let id
+          const numCharacters = Object.values(this.$store.state.characters.all).length
+          const startOrm = new Date().getTime()
+          for(let i = 0; i < amount; i++){
+            id = Math.round(Math.random() * numCharacters) + 1
+            const character = this.$store.getters['entities/characters/query']().where('idCharacter', id).with('episodes').with('locationCurrent').get()
+            this.fetchRandom.orm = character
+          }
+          this.$store.commit('time', {name: 'fetchRandom', type: 'orm', ms: new Date().getTime() - startOrm})
+          const startModules = new Date().getTime()
+          for(let i = 0; i < amount; i++){
+            id = Math.round(Math.random() * numCharacters) + 1
+            const character = this.$store.state.characters.all[id]
+            console.log('character.episodes', character.episodes)
+            character.episodes = character.episodes.map((idEpisode) => {
+              console.log('idEpisode', idEpisode, this.$store.state.episodes.all[idEpisode])
+              return this.$store.state.episodes.all[idEpisode]
+            })
+            character.locationCurrent = this.$store.state.locations.all[character.idLocationOrigin]
+            this.fetchRandom.modules = character
+          }
+          this.$store.commit('time', {name: 'fetchRandom', type: 'modules', ms: new Date().getTime() - startModules})
+          this.loaded.fetchRandom = true
+        })
+      },
+    },
+    components: {
+      chart,
+    },
+    async created(){
+      console.log(this.$store)
+    },
+  }
+
+// Export =====================
+
+  export default component
+
+</script>
+
 <style>
-#app {
-  font-family: 'Avenir', Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-}
-#nav {
-  padding: 30px;
-}
 
-#nav a {
-  font-weight: bold;
-  color: #2c3e50;
-}
+  .limit{
+    background-color: rgba(0, 0, 0, .15);
+    border: 1px solid rgba(0, 0, 0, .25);
+    max-height: 100px;
+    overflow-y: auto;
+    padding: .25rem;
+  }
 
-#nav a.router-link-exact-active {
-  color: #42b983;
-}
+  .results{
+    background-color: #FFF8E1;
+    border: 1px solid #FFC10755;
+    margin: .5rem;
+    padding: .5rem;
+  }
+
+  button{
+    background-color: #17d;
+    color: white;
+    font-weight: bold;
+    padding: .45rem 1.25rem;
+    border-radius: 5px;
+    border: 0;
+    cursor: pointer;
+    margin: 0;
+  }
+  button:active, button:hover{
+    background-color: #28e;
+  }
+
+/* Container */
+
+  .contain {
+    padding-right: .5rem;
+    padding-left: .5rem;
+    margin-right: auto;
+    margin-left: auto;
+  }
+  @media (max-width: 991px) {
+    .contain {
+      padding: 2%;
+    }
+  }
+  @media (min-width: 768px) {
+  }
+  @media (min-width: 992px) {
+    .contain {
+      padding: 0 2.5%;
+    }
+  }
+  @media (min-width: 1200px) {
+    .contain {
+      padding: 0 5%;
+    }
+  }
+
+/* Code Debug */
+
+  div.code{
+    max-height: 400px;
+    overflow-y: auto;
+    background: #f4f4f4;
+    border: 1px solid #ddd;
+    border-left: 3px solid #f36d33;
+    color: #666;
+    page-break-inside: avoid;
+    font-family: monospace;
+    font-size: 13px;
+    line-height: 1.5;
+    margin: .5em;
+    margin-bottom: 1.6em;
+    overflow: auto;
+    padding: 1em 1.5em;
+    display: block;
+    word-wrap: break-word;
+  }
+
 </style>

@@ -23,7 +23,7 @@ module.exports = {
     "no-tabs": "off",
     "space-before-function-paren": ["error", {
       "anonymous": "never",
-      "anonymous": "never",
+      "named": "never",
       "asyncArrow": "always"
     }],
     "keyword-spacing": ["error", {
@@ -35,7 +35,8 @@ module.exports = {
         "import": {"after": true},
         "from": {"before": true, "after": true},
         "as": {"before": true, "after": true},
-        "case": {"after": true}
+        "case": {"after": true},
+        "export": {"after": true}
       }
     }],
     "operator-linebreak": [2, "before", {"overrides": {"?": "after" } }],

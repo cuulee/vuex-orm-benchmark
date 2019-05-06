@@ -43,7 +43,7 @@
         species: character.species,
         type: character.type,
         gender: character.gender,
-        idLocation: typeof character.origin.url === 'string' ? urlToId(character.origin.url) : null,
+        idLocationCurrent: typeof character.origin.url === 'string' ? urlToId(character.origin.url) : null,
         idLocationOrigin: typeof character.location.url === 'string' ? urlToId(character.origin.url) : null,
         image: character.image,
         episodes: character.episode.map(url => urlToId(url)),
@@ -58,11 +58,11 @@
         name: location.name,
         type: location.type,
         dimension: location.dimension,
-        residents: location.residents.map(url => urlToId(url)),
+        idCharacterResidents: location.residents.map(url => urlToId(url)),
       }
     })
   }
-  async function fetchEpisodes(){    return list('episode/')
+  async function fetchEpisodes(){
     const episodes = await list('episode/')
     return episodes.map((episode) => {
       return {
@@ -74,7 +74,6 @@
       }
     })
   }
-
   async function list(path){
     let results = []
     let page = 1

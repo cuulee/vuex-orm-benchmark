@@ -43,7 +43,7 @@
           legend: {display: false},
           title: {
             display: true,
-            text: `${this.metric} ${this.amount ? '(' + this.amount + ' times)' : ''}`,
+            text: `${this.metric} ${this.amount ? '(' + this.amount + ' time' + (this.amount > 1 ? 's' : '') + ')' : ''}`,
           },
           scales: {
             xAxes: [{
@@ -53,11 +53,11 @@
               },
             }],
           },
-          showTooltips: false,
+          tooltips: {enabled: false},
           layout: {
             padding: {
-              left: 5,
-              right: 25,
+              left: 10,
+              right: 35,
               top: 0,
               bottom: 0
             },

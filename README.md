@@ -1,12 +1,10 @@
 # vuex-orm-benchmark
 
-This is a continuation of my [Medium Post](https://medium.com/@gdbate/structuring-vuex-modules-for-relationships-speed-and-durability-de25f7403643) on how I structure Vuex Modules. I had a lot of people suggest I use Vuex ORM after reading it, but Vuex ORM is what I tried first.
+This is a continuation of my [Medium Post](https://medium.com/@gdbate/structuring-vuex-modules-for-relationships-speed-and-durability-de25f7403643) on how I structure Vuex Modules for storing multiple records. A lot of people mentioned Vuex ORM as a good option, I did try it but it was too slow for my requirements.
 
-## History
+## Read Article
 
-I wanted to benchmark [Vuex ORM](https://vuex-orm.github.io/vuex-orm/) because when I was testing it for a work project I found it too slow to use. I do data visualization and manipulation where the modifications produce a lot of cascading changes, affecting a lot of records. I also "reload" the data a lot to bring it back to where it started. Vuex ORM is picking up a lot of steam and I want to see if it is a good solution given it's popularity.
-
-Check out the full record here.
+Check out the full article [here]().
 
 ## Project setup
 
